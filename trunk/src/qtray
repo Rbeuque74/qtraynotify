@@ -67,7 +67,7 @@ class Msg(QWidget):
 
 		self.msg = QLabel('Text', self.frame)
 		self.msg.resize(w - 6, h - 20)
-		self.msg.move(0, 7)
+		self.msg.move(0, 0)
 		self.msg.setPalette(textPalette)
 		self.msg.setAlignment(Qt.AlignCenter)
 
@@ -138,6 +138,8 @@ class Icon(QSystemTrayIcon):
 
 	def dataReceived(self, data):
 		if data != '\n':
+			data = QString(data)
+			data.remove('\n')
 			self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg-new.svg'))
 			self.msg.setText(data)
 			self.msg.show()
