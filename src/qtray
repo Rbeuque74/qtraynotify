@@ -10,7 +10,7 @@ import Xlib.protocol.event
 class Writer(QThread):
 	def __init__(self):
 		QThread.__init__(self)
-		self.pipe = QFile('/home/jo/tmp/traypipe')
+		self.pipe = QFile('/tmp/qtraynotify.fifo')
 		self.pipe.open(QIODevice.WriteOnly | QIODevice.Text)
 
 	def run(self):
@@ -86,7 +86,7 @@ class Msg(QWidget):
 class Icon(QSystemTrayIcon):
 	def __init__(self):
 		QSystemTrayIcon.__init__(self)
-		self.setIcon(QIcon('/home/jo/bin/msg.svg'))
+		self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg.svg'))
 
 		self.menu = QMenu()
 		self.actionExit = QAction('Exit', self.menu)
@@ -116,7 +116,7 @@ class Icon(QSystemTrayIcon):
 
 	def whenClicked(self):
 		self.changeWorkspace(2)
-		self.setIcon(QIcon('/home/jo/bin/msg.svg'))
+		self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg.svg'))
 		self.msg.hide()
 		self.timer.stop()
 
@@ -138,11 +138,10 @@ class Icon(QSystemTrayIcon):
 
 	def dataReceived(self, data):
 		if data != '\n':
-			self.setIcon(QIcon('/home/jo/bin/msg-new.svg'))
+			self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg-new.svg'))
 			self.msg.setText(data)
 			self.msg.show()
 			self.timer.start(5000);
-
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
