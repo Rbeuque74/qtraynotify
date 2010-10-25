@@ -1,4 +1,4 @@
-#summary Qtraynotify screenshots.
+#summary QTrayNotify screenshots.
 
 =Screenshots=
 [http://qtraynotify.googlecode.com/svn/wiki/Screenshots/Screenshot1.png]
