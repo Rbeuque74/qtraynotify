@@ -1,8 +1,4 @@
-#summary One-sentence summary of this page.
-
-= Introduction =
-
-QTrayNotify installation and launching how-to.
+#summary QTrayNotify installation and launching how-to.
 
 = Installation =
 
