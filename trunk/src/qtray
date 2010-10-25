@@ -1,24 +1,33 @@
 #!/usr/bin/python
 
+# QTrayNotify
+# Copyright (C) 2010 Ivan Babushkin (jogrms@gmail.com)
+#  
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
 import sys
-from PyQt4 import QtCore
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from Xlib import *
 import Xlib.protocol.event
 
-class Writer(QThread):
-	def __init__(self):
-		QThread.__init__(self)
-		self.pipe = QFile('/tmp/qtraynotify.fifo')
-		self.pipe.open(QIODevice.WriteOnly | QIODevice.Text)
-
-	def run(self):
-		while True:
-			self.pipe.write('\n')
+w = 200
+h = 60
 
 class Reader(QThread):
-	dataReceived = QtCore.pyqtSignal(str)
+	dataReceived = pyqtSignal(str)
 
 	def __init__(self):
 		QThread.__init__(self)
@@ -30,12 +39,10 @@ class Reader(QThread):
 			self.dataReceived.emit(data)
 
 class Msg(QWidget):
-	clicked = QtCore.pyqtSignal()
+	clicked = pyqtSignal()
 
 	def __init__(self):
 		QWidget.__init__(self)
-		w = 200
-		h = 50
 		titlePalette = self.palette()
 		textPalette = self.palette()
 		titlePalette.setColor(QPalette.Window, QColor(0x202020))
@@ -52,7 +59,6 @@ class Msg(QWidget):
 		self.frame = QWidget(self)
 		self.frame.resize(w - 6, h - 20)
 		self.frame.move(3, 17)
-		#self.frame.setFrameStyle(QFrame.StyledPanel)
 		self.frame.setPalette(textPalette)
 		self.frame.setAutoFillBackground(True)
 
@@ -66,10 +72,19 @@ class Msg(QWidget):
 		self.label.setAlignment(Qt.AlignCenter)
 
 		self.msg = QLabel('Text', self.frame)
-		self.msg.resize(w - 6, h - 20)
+		self.msg.resize(w - 6, (h - 20) / 2)
 		self.msg.move(0, 0)
 		self.msg.setPalette(textPalette)
 		self.msg.setAlignment(Qt.AlignCenter)
+
+		self.msg1 = QLabel('Text', self.frame)
+		self.msg1.resize(w - 6, (h - 20) / 2)
+		self.msg1.move(0, (h - 20) / 2)
+		self.msg1.setPalette(titlePalette)
+		self.msg1.setAlignment(Qt.AlignCenter)
+		font = self.msg1.font()
+		font.setPointSize(font.pointSize() - 2)
+		self.msg1.setFont(font)
 
 	def mousePressEvent(self, event):
 		if event.button() == Qt.LeftButton:
@@ -77,8 +92,13 @@ class Msg(QWidget):
 		self.hide()
 		event.accept()
 
-	def setText(self, text):
-		self.msg.setText(text)
+	def setText(self, text1, text2):
+		self.msg.setText(text1)
+		self.msg1.setText(text2)
+		if text2 == QString(''):
+			self.msg.resize(w - 6, h - 20)
+		else:
+			self.msg.resize(w - 6, (h - 20) / 2)
 
 	def setLabel(self, text):
 		self.label.setText(text)
@@ -105,14 +125,9 @@ class Icon(QSystemTrayIcon):
 		self.timer = QTimer()
 		self.timer.timeout.connect(self.msg.hide)
 
-		#self.writer = Writer()
-		#self.writer.start()
-
 		self.reader = Reader()
 		self.reader.dataReceived.connect(self.dataReceived)
 		self.reader.start()
-		
-		#self.showMessage('Title', 'Message')
 
 	def whenClicked(self):
 		self.changeWorkspace(2)
@@ -138,12 +153,29 @@ class Icon(QSystemTrayIcon):
 
 	def dataReceived(self, data):
 		if data != '\n':
-			data = QString(data)
-			data.remove('\n')
+			data1 = QString(data)
+			data2 = QString(data)
+			data2.remove(QRegExp('^.*\r'))
+			data1.remove(QRegExp('\r.*$'))
+			data1.remove('\n')
+			data2.remove('\n')
 			self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg-new.svg'))
-			self.msg.setText(data)
+			if data2 != QString(''):
+				message = QFile(data2)
+				message.open(QIODevice.ReadOnly | QIODevice.Text)
+				stream = QTextStream(message)
+				stream.setCodec("UTF-8")
+				messageString = QString(stream.readAll())
+				message.close()
+				messageString1 = messageString.left(25)
+				if messageString1 != messageString:
+					messageString1.append('...')
+				messageString1.remove('\n')
+				self.msg.setText(data1, messageString1)
+			else:
+				self.msg.setText(data1, '')
 			self.msg.show()
-			self.timer.start(5000);
+			self.timer.start(7000);
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)
