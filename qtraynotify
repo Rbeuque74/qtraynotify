@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -f /tmp/qtraynotify.fifo
+mkfifo -m 600 /tmp/qtraynotify.fifo
+qtray < /tmp/qtraynotify.fifo > /tmp/qtraynotify.fifo &
+echo "" > /tmp/qtraynotify.fifo &
+
