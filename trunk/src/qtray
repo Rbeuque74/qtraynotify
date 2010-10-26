@@ -159,23 +159,29 @@ class Icon(QSystemTrayIcon):
 			data1.remove(QRegExp('\r.*$'))
 			data1.remove('\n')
 			data2.remove('\n')
-			self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg-new.svg'))
-			if data2 != QString(''):
-				message = QFile(data2)
-				message.open(QIODevice.ReadOnly | QIODevice.Text)
-				stream = QTextStream(message)
-				stream.setCodec("UTF-8")
-				messageString = QString(stream.readAll())
-				message.close()
-				messageString1 = messageString.left(25)
-				if messageString1 != messageString:
-					messageString1.append('...')
-				messageString1.remove('\n')
-				self.msg.setText(data1, messageString1)
+			if data1 != QString(''):
+				self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg-new.svg'))
+				if data2 != QString(''):
+					message = QFile(data2)
+					message.open(QIODevice.ReadOnly | QIODevice.Text)
+					stream = QTextStream(message)
+					stream.setCodec("UTF-8")
+					messageString = QString(stream.readAll())
+					message.close()
+					messageString1 = messageString.left(25)
+					if messageString1 != messageString:
+						messageString1.append('...')
+					messageString1.remove('\n')
+					self.msg.setText(data1, messageString1)
+				else:
+					self.msg.setText(data1, '')
+				self.msg.show()
+				self.timer.start(7000);
 			else:
-				self.msg.setText(data1, '')
-			self.msg.show()
-			self.timer.start(7000);
+				self.setIcon(QIcon('/usr/share/icons/qtraynotify/msg.svg'))
+				self.msg.hide()
+				self.timer.stop()
+
 
 if __name__ == '__main__':
 	app = QApplication(sys.argv)

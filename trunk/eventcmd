@@ -34,4 +34,9 @@ if [ "$1" = "MSG" ]; then
 		fi
 	fi
 fi
+if [ "$1" = "UNREAD" ]; then
+#	if [ "$2" -eq 0 ]; then
+		echo -e "\rclear" > /tmp/qtraynotify.fifo &
+#	fi
+fi
 
