@@ -35,7 +35,8 @@ if [ "$1" = "MSG" ]; then
 	fi
 fi
 if [ "$1" = "UNREAD" ]; then
-	if [ "$2" -eq 0 ]; then
+	num=`echo "$2" | grep -o "^[[:digit:]]* "`
+	if [ $num = "0" ]; then
 		echo -e "\rclear" > /tmp/qtraynotify.fifo &
 	fi
 fi
